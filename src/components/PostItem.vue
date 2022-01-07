@@ -2,6 +2,7 @@
   <div class="post_wrapper">
     <div class="post">
       <div class="title">
+        {{ post.id }}
         <strong>{{ post.title }}</strong>
       </div>
       <div class="date">{{ post.body }}</div>

@@ -18,5 +18,6 @@ export default {
   background: none;
   font-size: 14px;
   border: 1px solid black;
+  cursor: pointer;
 }
 </style>

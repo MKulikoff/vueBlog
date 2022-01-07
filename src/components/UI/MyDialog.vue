@@ -7,19 +7,10 @@
 </template>
 
 <script>
+import toggleMixin from '@/mixins/toggleMixin'; 
 export default {
     name: 'my-dialog',
-    props: {
-        showDialog: {
-            type: Boolean, 
-            default: false
-        }
-    },
-    methods: {
-        closeDialog() {
-            this.$emit('update:showDialog', false)
-        }
-    }
+    mixins: [toggleMixin]
 }
 </script>
 

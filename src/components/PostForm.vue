@@ -1,7 +1,7 @@
 <template>
   <form action="submit" v-on:submit.prevent>
     <div class="addPost">
-      <my-input placeholder="Название" v-model="post.title" />
+      <my-input v-focus placeholder="Название" v-model="post.title" />
       <my-input placeholder="Текст" v-model="post.body" />
       <my-button @click="addNewPost">Добавить новый пост</my-button>
     </div>

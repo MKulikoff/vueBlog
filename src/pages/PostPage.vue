@@ -3,14 +3,19 @@
     <h3>Страница с постами</h3>
     <my-input
       placeholder="Поиск по заголовку..."
-      v-model="searchedQuery"
+      :model-value="searchedQuery"
+      @update:model-value="setSearchedQuery"
       v-focus
     ></my-input>
     <div class="app_btns">
       <my-button @click="showDialog">Создать пост</my-button>
-      <my-select :options="selectorOptions" v-model="selectedSort"></my-select>
+      <my-select 
+      :options="selectorOptions" 
+       model-value="selectedSort"
+       @update:model-value="setSelectedSort"
+       ></my-select>
     </div>
-    <page-list :pages="totalPages" @changePage="changePageNumber"></page-list>
+    <page-list :pages="totalPages" @changePage="setPageNumber"></page-list>
     <my-dialog v-model:showDialog="dialogVisible">
       <post-form @create="createPost" />
     </my-dialog>
@@ -24,7 +29,7 @@ import PostForm from "@/components/PostForm.vue";
 import PostList from "@/components/PostList.vue";
 import PageList from "@/components/PageList.vue";
 import axios from "axios";
-
+import {mapState, mapGetters, mapActions, mapMutations} from 'vuex'; 
 export default {
   components: {
     PostList,
@@ -33,31 +38,20 @@ export default {
   },
   data() {
     return {
-      posts: [],
-      dialogVisible: false,
-      isLoading: false,
-      selectedSort: "",
-      searchedQuery: "",
-      pageNumber: 1,
-      limitPosts: 10,
-      totalPages: 0,
-      selectorOptions: [
-        {
-          value: "id",
-          name: "По ID",
-        },
-        {
-          value: "title",
-          name: "По названию",
-        },
-        {
-          value: "body",
-          name: "По содержимому",
-        },
-      ],
+      dialogVisible: false
     };
   },
   methods: {
+      ...mapActions({
+        fetchPosts: 'post/fetchPosts'
+      }),
+      ...mapMutations({
+        setLoading: 'post/setLoading', 
+        setPageNumber: 'post/setPageNumber',
+        setSearchedQuery: 'post/setSearchedQuery',
+        setSelectedSort: 'post/setSelectedSort'
+      }),
+    },
     createPost(post) {
       this.posts.push(post);
       this.dialogVisible = false;
@@ -69,61 +63,31 @@ export default {
       this.dialogVisible = true;
     },
     changePageNumber(currentPage) {
-      this.pageNumber = currentPage;
+      this.setPageNumber(currentPage); 
     },
-
-    async fetchPosts() {
-      try {
-        this.isLoading = true;
-        const response = await axios.get(
-          "https://jsonplaceholder.typicode.com/posts?",
-          {
-            params: {
-              _page: this.pageNumber,
-              _limit: this.limitPosts,
-            },
-          }
-        );
-        this.totalPages = Math.ceil(
-          response.headers["x-total-count"] / this.limitPosts
-        );
-        this.posts = response.data;
-      } catch (error) {
-        alert(error);
-      } finally {
-        this.isLoading = false;
-      }
-    },
-  },
-  mounted() {
-    this.fetchPosts();
-  },
-  computed: {
-    sortedPosts() {
-      if (this.selectedSort == "id") {
-        return [...this.posts].sort((post1, post2) => {
-          return post1[this.selectedSort] - post2[this.selectedSort];
-        });
-      } else {
-        return [...this.posts].sort((post1, post2) => {
-          return post1[this.selectedSort]?.localeCompare(
-            post2[this.selectedSort]
-          );
-        });
-      }
-    },
-    sortAndSearchedPosts() {
-      return this.sortedPosts.filter((post) => {
-        return post.title
-          .toLowerCase()
-          .includes(this.searchedQuery.toLowerCase());
-      });
-    },
+   computed: {
+      ...mapState({
+        posts: state => state.post.posts,
+        isLoading: state => state.post.isLoading,
+        selectedSort: state => state.post.selectedSort,
+        searchedQuery: state => state.post.searchedQuery,
+        pageNumber: state => state.post.pageNumber,
+        limitPosts: state => state.post.limitPosts,
+        totalPages: state => state.post.totalPages,
+        selectorOptions: state => state.post.selectorOptions, 
+      }),
+      ...mapGetters({
+        sortedPosts: 'post/sortedPost',
+        sortAndSearchedPosts: 'post/sortAndSearchedPosts' 
+      })
   },
   watch: {
     pageNumber() {
       this.fetchPosts();
     },
+  },
+  mounted() {
+    this.fetchPosts();
   },
 };
 </script>
